@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# ================= Banner =================
+# ANSI Colors
+#BLACK=WHITE
+RED='\033[1;31m'
+NC='\033[0m' # Reset
+
+# AwC in black, Scan in red
+echo -e "${BLACK} █████╗ ██╗    ██╗ ██████╗${RED}███████╗ ██████╗ █████╗ ███╗   ██╗${NC}"
+echo -e "${BLACK}██╔══██╗██║    ██║██╔════╝${RED}██╔════╝██╔════╝██╔══██╗████╗  ██║${NC}"
+echo -e "${BLACK}███████║██║ █╗ ██║██║     ${RED}███████╗██║     ███████║██╔██╗ ██║${NC}"
+echo -e "${BLACK}██╔══██║██║███╗██║██║     ${RED}╚════██║██║     ██╔══██║██║╚██╗██║${NC}"
+echo -e "${BLACK}██║  ██║╚███╔███╔╝╚██████╗${RED}███████║╚██████╗██║  ██║██║ ╚████║${NC}"
+echo -e "${BLACK}╚═╝  ╚═╝ ╚══╝╚══╝  ╚═════╝${RED}╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝${NC}"
+
+
+# ================= Help Function =================
+show_help() {
+    echo
+    echo "Usage: awcscan <IP>"
+    echo
+    echo "Performs a fast all-port Nmap scan and saves open ports."
+    echo
+    echo "Options:"
+    echo "  --help     Show this help message and exit"
+    echo
+    echo "Example:"
+    echo "  awcscan 10.10.10.10"
+    echo
+    echo "Vulnerability Scan:"
+    echo "  After scanning, the script performs a vulnerability scan on open ports."
+    echo "  If you prefer, you can remove the comments from the last three lines in the script"
+    echo "  or run the following command directly in the terminal (replace \$IP with your target IP):"
+    echo "      nmap -p\$ports.txt \$IP --script vuln -oN vuln_scan.txt"
+    echo
+}
+
+
+
+# ================= Argument Checks =================
+# If --help is passed
+if [ "$1" == "--help" ]; then
+    show_help
+    exit 0
+fi
+
+# If no IP is passed
+if [ -z "$1" ]; then
+    echo "Error: No IP provided."
+    echo "Try 'vulnscan --help' for usage."
+    exit 1
+fi
+
+IP="$1"
+SCAN_FILE="nmap_scan.txt"
+
+
+# ================= Fast Scan =======================
+# Run fast scan
+nmap -p- --min-rate 10000 --max-rtt-timeout 2000ms -T5 "$IP" -oN "$SCAN_FILE"
+
+# ================= Extract Ports ===================
+# Extract TCP/UDP ports
+PORTS=$(grep -oP '^\d+(?=/(tcp|udp))' "$SCAN_FILE" | tr '\n' ',' | sed 's/,$//')
+
+# Save ports
+echo ""
+echo "$PORTS" | tee ports.txt
+
+echo "Ports saved to ports.txt"
+
+# ================= Vulnerability Scan =================
+#Further Vuln Scan
+
+##--> Remove Comments From Below To Use It <--##
+#PORTS=$(cat ports.txt)
+#nmap -p$PORTS $IP --script vuln -oN vuln_scan.txt #vuln scan
+#nmap -p$PORTS $IP -sCV -oN service_scan.txt #service and script scan
