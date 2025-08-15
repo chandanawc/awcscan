@@ -1,7 +1,4 @@
-#Requirements
-nmap
-
-bash
+#Requirements: nmap,bash
 
 # awcscan
 git clone https://github.com/chandanawc/awcscan/raw/refs/heads/main/awcscan
